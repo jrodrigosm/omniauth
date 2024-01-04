@@ -263,12 +263,18 @@ module OmniAuth
 
     # Performs the steps necessary to run the callback phase of a strategy.
     def callback_call
+      log :debug, "***** Omniauth::Strategy#callback_call - Starting"
+      log :debug, "***** Omniauth::Strategy#callback_call - session is #{session.inspect}"
+      log :debug, "***** Omniauth::Strategy#callback_call - @env is #{@env.inspect}"
       setup_phase
       log :debug, 'Callback phase initiated.'
       @env['omniauth.origin'] = session.delete('omniauth.origin')
       @env['omniauth.origin'] = nil if env['omniauth.origin'] == ''
+      log :debug, "***** Omniauth::Strategy#callback_call - @env['omniauth.origin'] is #{@env['omniauth.origin']}"
       @env['omniauth.params'] = session.delete('omniauth.params') || {}
+      log :debug, "***** Omniauth::Strategy#callback_call - @env['omniauth.params'] is #{@env['omniauth.params']}"
       OmniAuth.config.before_callback_phase.call(@env) if OmniAuth.config.before_callback_phase
+      log :debug, "***** Omniauth::Strategy#callback_call - Calling callback_phase"
       callback_phase
     end
 
@@ -414,7 +420,10 @@ module OmniAuth
     end
 
     def callback_phase
+      log :debug, "***** Omniauth::Strategy#callback_phase - Starting"
       env['omniauth.auth'] = auth_hash
+      log :debug, "***** Omniauth::Strategy#callback_phase - env['omniauth.auth'] is #{env['omniauth.auth']}"
+      log :debug, "***** Omniauth::Strategy#callback_phase - Calling app"
       call_app!
     end
 
@@ -467,8 +476,10 @@ module OmniAuth
     end
 
     def call_app!(env = @env)
+      log :debug, "***** Omniauth::Strategy#call_app! - Calling app, passing param #{env}"
       @app.call(env)
     rescue StandardError => e
+      log :debug, "***** Omniauth::Strategy#call_app! - Caught error #{e.inspect}"
       env['omniauth.error.app'] = true
       raise e
     end
